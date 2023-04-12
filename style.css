@@ -1,0 +1,27 @@
+body {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+.origin,
+.receiver {
+	border: 2px dashed blue;
+	height: 300px;
+	width: 400px;
+	margin: 10px;
+
+	/* Disallowed space inside divs from being selected when trying to drag something inside */
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.draggable {
+	height: 100px;
+	width: 100px;
+	background: green;
+}
+
+.draggable.holding {
+	box-shadow: 0 0 10px blue;
+}
