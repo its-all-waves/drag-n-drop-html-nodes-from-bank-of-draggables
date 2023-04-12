@@ -47,23 +47,23 @@ function pointerUp(e) {
 	const draggable = e.target
 	draggable.classList.remove('holding')
 	draggable.style.position = ''
-	draggable.removeEventListener('pointermove', pointerMove)
-	draggable.removeEventListener('pointerup', pointerUp)
-
+	
 	// determine where we are so we can drop the item there, if appropriate...
 	// 'hide' the draggable from 'view' so we can at what's under it, get what's under, then 'unhide the draggable
 	draggable.style.pointerEvents = 'none'
 	const dropZone = document.elementFromPoint(e.clientX, e.clientY)
 	// 'unhide' the draggable
 	draggable.style.pointerEvents = ''
-
+	
 	if (
 		dropZone.classList.contains('receiver') ||
 		dropZone.classList.contains('origin')
-	) {
-		dropZone.appendChild(draggable);
-	}
-	
+		) {
+			dropZone.appendChild(draggable);
+		}
+		
+	draggable.removeEventListener('pointermove', pointerMove)
+	draggable.removeEventListener('pointerup', pointerUp)
 }
 
 
