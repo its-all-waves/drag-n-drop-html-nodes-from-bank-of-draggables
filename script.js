@@ -12,7 +12,10 @@ const origin = document.querySelector('.origin')
 const receiver = document.querySelector('.receiver')
 const draggableDiv = document.querySelector('.draggable')
 
+// Keeps the page from moving when dragging a draggable
+draggableDiv.style.touchAction = 'none'
 
+// Apply all the event listeners to the draggable thru this listener
 draggableDiv.addEventListener('pointerdown', pointerDown)
 
 // Disallow the page from being pulled down to refresh / doing that bouncy bs
@@ -21,12 +24,6 @@ document.documentElement.style.setProperty('overscroll-behavior', 'none')
 function pointerDown(e) {
 
 	const draggable = e.target
-
-	// TODO: WHY DOESN'T THIS WORK?
-	// account for touch
-	if (e.pointerType === 'touch') {
-		draggable.style.touchAction = 'none'
-	}
 
 	// visual feedback of holding the draggable
 	draggable.classList.add('holding')
@@ -45,7 +42,6 @@ function pointerDown(e) {
 
 	// stop translation of the draggable upon click/tap
 	updatePosition(e)
-	// snapToPointer(e)
 
 	// start listening for pointermove, pointerup
 	draggable.addEventListener('pointermove', pointerMove)
@@ -54,19 +50,21 @@ function pointerDown(e) {
 }
 
 
+/* Determine where we are so we can drop the item there, if appropriate */
 function pointerUp(e) {
 
 	const draggable = e.target
 	draggable.classList.remove('holding')
 	draggable.style.position = ''
 	
-	// determine where we are so we can drop the item there, if appropriate...
-	// 'hide' the draggable from pointer so we can at what's under it, get what's under, then 'unhide' the draggable
+	// 'hide' the draggable from pointer so we can get at what's under it, 
+	// get what's under, then 'unhide' the draggable
 	draggable.style.pointerEvents = 'none'
 	const dropZone = document.elementFromPoint(e.clientX, e.clientY)
 	// 'unhide' the draggable
 	draggable.style.pointerEvents = ''
 	
+	// append the draggable where it's dropped if it's a valid place
 	if (
 		dropZone.classList.contains('receiver') ||
 		dropZone.classList.contains('origin')
@@ -80,9 +78,7 @@ function pointerUp(e) {
 }
 
 
-function pointerMove(e) {
-	updatePosition(e)
-}
+function pointerMove(e) { updatePosition(e) }
 
 
 /* Window scroll accounts for offsets in position vals 
