@@ -6,7 +6,6 @@
 
 */
 
-
 const origin = document.querySelector('.origin')
 const receiver = document.querySelector('.receiver')
 const draggableDiv = document.querySelector('.draggable')
@@ -17,11 +16,21 @@ draggableDiv.addEventListener('pointerdown', pointerDown)
 
 function pointerDown(e) {
 
+	// TEST DELETE
+	console.log('what the fucking fuck')
+
 	const draggable = e.target
+
+	// account for touch
+	if (e.pointerType === 'touch') {
+		draggable.style.touchAction = 'none'
+	}
+
+	// visual feedback of holding the draggable
 	draggable.classList.add('holding')
 
 	// (also fixes holding class remaining after pointer up)
-	draggable.setPointerCapture(draggable.pointerId)
+	draggable.setPointerCapture(e.pointerId)
 
 	// get computed width and height of draggable
 	const bounds = draggable.getBoundingClientRect()
@@ -32,18 +41,18 @@ function pointerDown(e) {
 	// allow the draggable to be positioned manually
 	draggable.style.position = 'absolute'
 
-	// // stop translation of the draggable upon click/tap
+	// stop translation of the draggable upon click/tap
 	updatePosition(e)
 
-	// start listening for pointermove
+	// start listening for pointermove, pointerup
 	draggable.addEventListener('pointermove', pointerMove)
-	// start listening for pointer up
 	draggable.addEventListener('pointerup', pointerUp)
 	draggable.addEventListener('pointercancel', pointerUp)
 }
 
 
 function pointerUp(e) {
+
 	const draggable = e.target
 	draggable.classList.remove('holding')
 	draggable.style.position = ''
@@ -62,6 +71,7 @@ function pointerUp(e) {
 			dropZone.appendChild(draggable);
 		}
 		
+	// last step - remove all the event listeners from the draggable
 	draggable.removeEventListener('pointermove', pointerMove)
 	draggable.removeEventListener('pointerup', pointerUp)
 }
@@ -77,3 +87,5 @@ function updatePosition(e) {
 	draggable.style.left = `${e.clientX - offset.x}px`
 	draggable.style.top = `${e.clientY - offset.y}px`
 }
+
+
