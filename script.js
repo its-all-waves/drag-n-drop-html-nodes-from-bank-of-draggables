@@ -36,7 +36,7 @@ function pointerDown(e) {
 		// stop left-behind copy from translating under original draggable **
 		copy.style.position = 'absolute'
 		draggable.parentNode.appendChild(copy)
-		// TODO: on drop, if still in origin, delete what's dragged to leave only copy
+		// TODO: on drop, if still in origin, delete either the dragged or the copy
 	}
 
 	// visual feedback of holding the draggable
@@ -58,9 +58,13 @@ function pointerDown(e) {
 	updatePosition(e)
 
 	// undoes: stop left-behind copy from translating under original draggable **
-	// if (draggable.copy !== null)
-	if (draggable.copy)
+	// undoes: store the copy in the draggable to be ref'd outside of this scope *
+	if (draggable.copy) {
+		/* Yes, this is necessary, as .copy [must be] a pointer to the actual copy,
+		need to make one final reference (1st 'undoes' above) before deleting. */
 		draggable.copy.style.position = ''
+		delete draggable.copy
+	}
 
 	// start listening for pointermove, pointerup
 	draggable.addEventListener('pointermove', pointerMove)
@@ -78,10 +82,6 @@ function pointerUp(e) {
 	draggable.style.position = ''
 	draggable.style.top = ''
 	draggable.style.left = ''
-
-	// I *think* I want this to not keep unnecessary data around
-	// undoes: store the copy in the draggable to be ref'd outside of this scope *
-	delete draggable.copy
 
 	// 'hide' the draggable from pointer so we can get at what's under it,
 	// get what's under, then 'unhide' the draggable
