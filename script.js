@@ -3,8 +3,8 @@
 - [x] use pointer events to implement custom drag n drop 
 - [x] drag 1 box into another
 - [x] must not translate upon click/tap
-- [ ] copies from origin
-- [ ] moves from receiver into another receiver
+- [x] copies from origin
+- [x] moves from receiver into another receiver
 - [ ] draggable stores which receiver is hovered-over
 - [ ] hovered-over divs visually respond to the state
 
@@ -91,10 +91,13 @@ function pointerUp(e) {
 	draggable.style.pointerEvents = ''
 
 	// append the draggable where it's dropped if it's a valid place
-	if (dropZone.classList.contains('receiver'))
-		dropZone.appendChild(draggable)
+	if (dropZone.classList.contains('receiver')) dropZone.appendChild(draggable)
+	
+	// don't append the draggable to the origin if it's dropped outside a receiver
+	else draggable.remove()
+	/* 👆🏽 NOTE: For an unknown reason, I had to generalize this to an else instead of a separate [if dropZone's classlist contains 'origin']. When it was a separate if statement, it only worked reliably when dropped above the element, in the 'origin'. If dropped below the element, still in 'origin', it would work 50% of the time. Wah? */
 
-	// last step - remove all the event listeners from the draggable
+	// (last step) remove event listeners that were added on pointerdown
 	draggable.removeEventListener('pointermove', pointerMove)
 	draggable.removeEventListener('pointerup', pointerUp)
 }
