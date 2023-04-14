@@ -93,9 +93,9 @@ function pointerUp(e) {
 	// append the draggable where it's dropped if it's a valid place
 	if (dropZone.classList.contains('receiver')) dropZone.appendChild(draggable)
 	
-	// don't append the draggable to the origin if it's dropped outside a receiver
-	else draggable.remove()
-	/* 👆🏽 NOTE: For an unknown reason, I had to generalize this to an else instead of a separate [if dropZone's classlist contains 'origin']. When it was a separate if statement, it only worked reliably when dropped above the element, in the 'origin'. If dropped below the element, still in 'origin', it would work 50% of the time. Wah? */
+	// delete draggable if it's dropped in the origin
+	else if (draggable.parentNode.classList.contains('origin')) draggable.remove()
+	/* 👆🏽 NOTE: When this was left simply as `else draggable.remove()`, it had the side effect of deleting things that were dropped outside of a receiver. Maybe this could be useful? Not using currently to avoid accidental removal. */
 
 	// (last step) remove event listeners that were added on pointerdown
 	draggable.removeEventListener('pointermove', pointerMove)
