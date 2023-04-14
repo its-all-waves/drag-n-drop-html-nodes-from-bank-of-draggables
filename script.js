@@ -5,6 +5,7 @@
 - [x] must not translate upon click/tap
 - [x] copies from origin
 - [x] moves from receiver into another receiver
+- [x] nothing unexpected when more than 1 div in origin
 - [ ] draggable stores which receiver is hovered-over
 - [ ] hovered-over divs visually respond to the state
 
@@ -12,16 +13,20 @@
 
 const origin = document.querySelector('.origin')
 const receiver = document.querySelector('.receiver')
-const draggableDiv = document.querySelector('.draggable')
 
-// Keeps the page from moving when dragging a draggable
-draggableDiv.style.touchAction = 'none'
+// mod for multiple draggables
+const draggables = document.querySelectorAll('.draggable')
 
-// Apply all the event listeners to the draggable thru this listener
-draggableDiv.addEventListener('pointerdown', pointerDown)
-
-// Disallow the page from being pulled down to refresh / doing that bouncy bs
-document.documentElement.style.setProperty('overscroll-behavior', 'none')
+draggables.forEach(draggable => {
+	// Keeps the page from moving when dragging a draggable
+	draggable.style.touchAction = 'none'
+	
+	// Apply all the event listeners to the draggable thru this listener
+	draggable.addEventListener('pointerdown', pointerDown)
+	
+	// Disallow the page from being pulled down to refresh / doing that bouncy bs
+	document.documentElement.style.setProperty('overscroll-behavior', 'none')
+})
 
 
 function pointerDown(e) {
