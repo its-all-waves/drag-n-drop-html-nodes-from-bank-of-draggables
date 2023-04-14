@@ -1,5 +1,4 @@
 /* GOALS
-
 - [x] use pointer events to implement custom drag n drop 
 - [x] drag 1 box into another
 - [x] must not translate upon click/tap
@@ -9,7 +8,7 @@
 - [x] draggables don't move when picked up from / dropped inside origin
 - [x] draggable stores which receiver is hovered-over
 - [x] hovered-over divs visually respond to the state
-- [ ] if draggable is dropped in receiver but on top of child, behave as expected (append to receiver)
+- [x] if draggable is dropped in receiver but on top of child, behave as expected (append to receiver)
 */
 
 const origin = document.querySelector('.origin')
@@ -115,10 +114,15 @@ function pointerUp(e) {
 	draggable.style.pointerEvents = ''
 
 	// append the draggable where it's dropped if it's a valid place
-	if (dropZone.classList.contains('receiver')) dropZone.appendChild(draggable)
+	if (dropZone.classList.contains('receiver'))
+		dropZone.appendChild(draggable)
+	
+	if (dropZone.parentNode.classList.contains('receiver'))
+		dropZone.parentNode.appendChild(draggable)
 	
 	// delete draggable if it's dropped in the origin
-	if (draggable.parentNode.classList.contains('origin')) draggable.remove()
+	if (draggable.parentNode.classList.contains('origin'))
+		draggable.remove()
 	/* 👆🏽 NOTE: When this was left simply as `else draggable.remove()`, it had the side effect of deleting things that were dropped outside of a receiver. Maybe this could be useful? Not using currently to avoid accidental removal. */
 
 	// remove visual feedback for being hovered over
@@ -175,12 +179,3 @@ function copyNode(draggedNode) {
 	draggedCopy.addEventListener('pointerdown', pointerDown)
 	return draggedCopy
 }
-
-/* ORIGINAL - Does not account for offset produced by zoom 
-and scroll (out-of-view content) */
-// function updatePosition(e) {
-// 	const draggable = e.target
-// 	const grabOffset = draggable.grabOffset
-// 	draggable.style.left = `${e.clientX - grabOffset.x}px`
-// 	draggable.style.top = `${e.clientY - grabOffset.y}px`
-// }
