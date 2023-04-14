@@ -5,6 +5,8 @@
 - [x] must not translate upon click/tap
 - [ ] copies from origin
 - [ ] moves from receiver into another receiver
+- [ ] draggable stores which receiver is hovered-over
+- [ ] hovered-over divs visually respond to the state
 
 */
 
@@ -21,9 +23,24 @@ draggableDiv.addEventListener('pointerdown', pointerDown)
 // Disallow the page from being pulled down to refresh / doing that bouncy bs
 document.documentElement.style.setProperty('overscroll-behavior', 'none')
 
-function pointerDown(e) {
+// function beginDrag(e) {
+// 	pointerMove(e)
+// }
 
-	const draggable = e.target
+
+function pointerDown(e) {
+	let draggable = e.target
+
+	// copy if grabbed from origin, move otherwise
+	// * truly -- leave a copy behind and drag the thing you clicked
+	if (draggable.parentNode.classList.contains('origin')) {
+		// copy node in-place
+		copy = copyNode(draggable)
+		copy.classList.add('copy') // DEBUG ONLY
+		copy.style.position = 'absolute' // NEW CODE
+		draggable.parentNode.appendChild(copy)
+		// TODO: on drop, if still in origin, delete what's dragged to leave only copy
+	}
 
 	// visual feedback of holding the draggable
 	draggable.classList.add('holding')
@@ -42,6 +59,8 @@ function pointerDown(e) {
 
 	// stop translation of the draggable upon click/tap
 	updatePosition(e)
+
+	copy.style.position = '' // NEW CODE
 
 	// start listening for pointermove, pointerup
 	draggable.addEventListener('pointermove', pointerMove)
@@ -66,8 +85,7 @@ function pointerUp(e) {
 	
 	// append the draggable where it's dropped if it's a valid place
 	if (
-		dropZone.classList.contains('receiver') ||
-		dropZone.classList.contains('origin')
+		dropZone.classList.contains('receiver')
 		) {
 			dropZone.appendChild(draggable);
 		}
@@ -91,6 +109,15 @@ function updatePosition(e) {
 	const y = e.clientY - grabOffset.y + window.scrollY;
 	draggable.style.left = x + 'px';
 	draggable.style.top = y + 'px';
+}
+
+function copyNode(draggedNode) {
+	const draggedCopy = document.createElement('div');
+	draggedCopy.className = draggedNode.className;
+	draggedCopy.textContent = draggedNode.textContent;
+	// DragItem.applyDragDropListeners(draggedCopy);
+	draggedCopy.addEventListener('pointerdown', pointerDown)
+	return draggedCopy;
 }
 
 /* ORIGINAL - Does not account for offset produced by zoom 
