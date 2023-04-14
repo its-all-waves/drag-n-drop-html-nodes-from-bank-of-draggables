@@ -6,6 +6,7 @@
 - [x] copies from origin
 - [x] moves from receiver into another receiver
 - [x] nothing unexpected when more than 1 div in origin
+- [x] draggables don't move when picked up from / dropped inside origin
 - [ ] draggable stores which receiver is hovered-over
 - [ ] hovered-over divs visually respond to the state
 
@@ -32,6 +33,15 @@ draggables.forEach(draggable => {
 function pointerDown(e) {
 	let draggable = e.target
 
+	// get the child number of the draggable
+	const children = draggable.parentNode.children
+	for (const child of children) {
+		if (child === draggable) {
+			draggable.childNumber = [...children].indexOf(child)
+			break
+		}
+	}
+
 	const draggedFromOrigin = draggable.parentNode.classList.contains('origin')
 	// copy in-place if grabbed from origin, move otherwise
 	// (truly -- leave a copy behind and drag the thing you clicked)
@@ -40,9 +50,14 @@ function pointerDown(e) {
 		const copy = draggable.copy = copyNode(draggable)
 		// stop left-behind copy from translating under original draggable **
 		copy.style.position = 'absolute'
-		draggable.parentNode.appendChild(copy)
-		// TODO: on drop, if still in origin, delete either the dragged or the copy
+
+		const childNumber = draggable.childNumber
+		const nodeToBeReplaced = draggable.parentNode.children[childNumber] 
+		draggable.parentNode.insertBefore(copy, nodeToBeReplaced)
 	}
+
+	// delete childNumber property since won't be needed again
+	if (draggable.childNumber) delete draggable.childNumber
 
 	// visual feedback of holding the draggable
 	draggable.classList.add('holding')
