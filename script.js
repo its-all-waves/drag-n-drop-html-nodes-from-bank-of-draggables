@@ -23,21 +23,17 @@ draggableDiv.addEventListener('pointerdown', pointerDown)
 // Disallow the page from being pulled down to refresh / doing that bouncy bs
 document.documentElement.style.setProperty('overscroll-behavior', 'none')
 
-// function beginDrag(e) {
-// 	pointerMove(e)
-// }
-
 
 function pointerDown(e) {
 	let draggable = e.target
 
-	// copy if grabbed from origin, move otherwise
-	// * truly -- leave a copy behind and drag the thing you clicked
+	// copy in-place if grabbed from origin, move otherwise
+	// (truly -- leave a copy behind and drag the thing you clicked)
 	if (draggable.parentNode.classList.contains('origin')) {
-		// copy node in-place
 		copy = copyNode(draggable)
-		copy.classList.add('copy') // DEBUG ONLY
-		copy.style.position = 'absolute' // NEW CODE
+		copy.classList.add('copy') // DEBUG
+		// stop left-behind copy from translating under original draggable ***
+		copy.style.position = 'absolute'
 		draggable.parentNode.appendChild(copy)
 		// TODO: on drop, if still in origin, delete what's dragged to leave only copy
 	}
@@ -60,7 +56,8 @@ function pointerDown(e) {
 	// stop translation of the draggable upon click/tap
 	updatePosition(e)
 
-	copy.style.position = '' // NEW CODE
+	// undoes: stop left-behind copy from translating under original draggable ***
+	copy.style.position = ''
 
 	// start listening for pointermove, pointerup
 	draggable.addEventListener('pointermove', pointerMove)
@@ -112,12 +109,12 @@ function updatePosition(e) {
 }
 
 function copyNode(draggedNode) {
-	const draggedCopy = document.createElement('div');
-	draggedCopy.className = draggedNode.className;
-	draggedCopy.textContent = draggedNode.textContent;
-	// DragItem.applyDragDropListeners(draggedCopy);
+	const draggedCopy = document.createElement('div')
+	draggedCopy.className = draggedNode.className
+	draggedCopy.textContent = draggedNode.textContent
+	draggedCopy.style.touchAction = 'none'
 	draggedCopy.addEventListener('pointerdown', pointerDown)
-	return draggedCopy;
+	return draggedCopy
 }
 
 /* ORIGINAL - Does not account for offset produced by zoom 
