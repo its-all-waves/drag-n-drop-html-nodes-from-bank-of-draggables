@@ -43,3 +43,7 @@ body {
 .draggable.holding {
 	box-shadow: 0 0 10px blue;
 }
+
+.hovered {
+	border: 3px solid red;
+}

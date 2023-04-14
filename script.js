@@ -7,9 +7,9 @@
 - [x] moves from receiver into another receiver
 - [x] nothing unexpected when more than 1 div in origin
 - [x] draggables don't move when picked up from / dropped inside origin
-- [ ] draggable stores which receiver is hovered-over
-- [ ] hovered-over divs visually respond to the state
-
+- [x] draggable stores which receiver is hovered-over
+- [x] hovered-over divs visually respond to the state
+- [ ] if draggable is dropped in receiver but on top of child, behave as expected (append to receiver)
 */
 
 const origin = document.querySelector('.origin')
@@ -33,18 +33,18 @@ draggables.forEach(draggable => {
 function pointerDown(e) {
 	let draggable = e.target
 
-	// get the child number of the draggable
-	const children = draggable.parentNode.children
+	/* NOTE: only used to stop re-ordering of draggables if dragged from & dropped back into origin */
+	// get the child number of the draggable to know where to insert it later
+	const children = [...draggable.parentNode.children]
 	for (const child of children) {
 		if (child === draggable) {
-			draggable.childNumber = [...children].indexOf(child)
+			draggable.childNumber = children.indexOf(child)
 			break
 		}
 	}
 
+	// leave a copy if grabbed from origin, otherwise move
 	const draggedFromOrigin = draggable.parentNode.classList.contains('origin')
-	// copy in-place if grabbed from origin, move otherwise
-	// (truly -- leave a copy behind and drag the thing you clicked)
 	if (draggedFromOrigin) {
 		// store the copy in the draggable to be ref'd outside of this scope *
 		const copy = draggable.copy = copyNode(draggable)
@@ -59,22 +59,26 @@ function pointerDown(e) {
 	// delete childNumber property since won't be needed again
 	if (draggable.childNumber) delete draggable.childNumber
 
-	// visual feedback of holding the draggable
+	// add visual feedback for holding the draggable
 	draggable.classList.add('holding')
 
+	// lock the draggable to the pointer
 	// (also fixes holding class remaining after pointer up)
 	draggable.setPointerCapture(e.pointerId)
 
-	// get computed width and height of draggable
+	// get computed dimensions of draggable to later calc offset of where grapped 
 	const bounds = draggable.getBoundingClientRect()
 
-	// store the offset of the click to the top/left of the draggable
-	draggable.grabOffset = { x: e.clientX - bounds.x, y: e.clientY - bounds.y }
+	// store the offset between the click and the top/left of the draggable
+	draggable.grabOffset = {
+		x: e.clientX - bounds.x,
+		y: e.clientY - bounds.y,
+	}
 
 	// allow the draggable to be positioned manually
 	draggable.style.position = 'absolute'
 
-	// stop translation of the draggable upon click/tap
+	// stop translation of the draggable on pointerdown
 	updatePosition(e)
 
 	// undoes: stop left-behind copy from translating under original draggable **
@@ -114,17 +118,42 @@ function pointerUp(e) {
 	if (dropZone.classList.contains('receiver')) dropZone.appendChild(draggable)
 	
 	// delete draggable if it's dropped in the origin
-	else if (draggable.parentNode.classList.contains('origin')) draggable.remove()
+	if (draggable.parentNode.classList.contains('origin')) draggable.remove()
 	/* 👆🏽 NOTE: When this was left simply as `else draggable.remove()`, it had the side effect of deleting things that were dropped outside of a receiver. Maybe this could be useful? Not using currently to avoid accidental removal. */
 
+	// remove visual feedback for being hovered over
+	dropZone.classList.remove('hovered')
+	
 	// (last step) remove event listeners that were added on pointerdown
 	draggable.removeEventListener('pointermove', pointerMove)
 	draggable.removeEventListener('pointerup', pointerUp)
 }
 
 
-function pointerMove(e) { updatePosition(e) }
+function pointerMove(e) {
+	// highlight the hovered-over receivers
+	const draggable = e.target
+	// 'hide' the draggable from pointer so we can get at what's under it,
+	// get what's under, then 'unhide' the draggable from the pointer
+	draggable.style.pointerEvents = 'none'
+	const hoveredOver = document.elementFromPoint(e.clientX, e.clientY)
+	draggable.style.pointerEvents = ''
 
+	// get rid of feedback on every receiver, so we can 
+	// show it only on what we're currently over
+	const receivers = document.querySelectorAll('.receiver')
+	receivers.forEach(receiver => {
+		if (receiver !== hoveredOver)
+			receiver.classList.remove('hovered')
+	})
+
+	// show visual feedback on the receiver we're dragging over
+	if (hoveredOver.classList.contains('receiver'))
+		hoveredOver.classList.add('hovered')
+	
+	// match the draggable's position to the pointer
+	updatePosition(e)
+}
 
 /* Window scroll accounts for offsets in position vals 
 due to being scrolled or zoomed (IOW, when content outside 
