@@ -22,10 +22,10 @@ draggables.forEach(draggable => {
 	// Apply all the event listeners to the draggable thru this listener
 	draggable.addEventListener('pointerdown', pointerDown)
 	
-	// Disallow the page from being pulled down to refresh / doing that bouncy bs
-	document.documentElement.style.setProperty('overscroll-behavior', 'none')
 })
 
+// Disallow the page from being pulled down to refresh / doing that bouncy bs
+document.documentElement.style.setProperty('overscroll-behavior', 'none')
 
 function pointerDown(e) {
 	let draggable = e.target
