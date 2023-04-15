@@ -13,8 +13,6 @@
 
 const origin = document.querySelector('.origin')
 const receiver = document.querySelector('.receiver')
-
-// mod for multiple draggables
 const draggables = document.querySelectorAll('.draggable')
 
 draggables.forEach(draggable => {
@@ -65,7 +63,7 @@ function pointerDown(e) {
 	// (also fixes holding class remaining after pointer up)
 	draggable.setPointerCapture(e.pointerId)
 
-	// get computed dimensions of draggable to later calc offset of where grapped 
+	// get computed dimensions of draggable to later calc offset of where grabbed 
 	const bounds = draggable.getBoundingClientRect()
 
 	// store the offset between the click and the top/left of the draggable
@@ -83,8 +81,8 @@ function pointerDown(e) {
 	// undoes: stop left-behind copy from translating under original draggable **
 	// undoes: store the copy in the draggable to be ref'd outside of this scope *
 	if (draggable.copy) {
-		/* Yes, this is necessary, as .copy [must be] a pointer to the actual copy,
-		need to make one final reference (1st 'undoes' above) before deleting. */
+		/* Yes, this is necessary, as .copy [must be] a pointer to the actual copy.
+		Need to make one final reference (1st 'undoes' above) before deleting. */
 		draggable.copy.style.position = ''
 		delete draggable.copy
 	}
@@ -113,10 +111,11 @@ function pointerUp(e) {
 	// 'unhide' the draggable
 	draggable.style.pointerEvents = ''
 
-	// append the draggable where it's dropped if it's a valid place
+	// append the draggable where it's dropped if it's receiver`
 	if (dropZone.classList.contains('receiver'))
 		dropZone.appendChild(draggable)
 	
+	// accounts for dropping onto a child of a receiver
 	if (dropZone.parentNode.classList.contains('receiver'))
 		dropZone.parentNode.appendChild(draggable)
 	
@@ -154,6 +153,9 @@ function pointerMove(e) {
 	// show visual feedback on the receiver we're dragging over
 	if (hoveredOver.classList.contains('receiver'))
 		hoveredOver.classList.add('hovered')
+	// account for dropping on child of receiver
+	if (hoveredOver.parentNode.classList.contains('receiver'))
+		hoveredOver.parentNode.classList.add('hovered')
 	
 	// match the draggable's position to the pointer
 	updatePosition(e)
