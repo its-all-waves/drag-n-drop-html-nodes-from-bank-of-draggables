@@ -12,7 +12,7 @@
 */
 
 const origin = document.querySelector('.origin')
-const receiver = document.querySelector('.receiver')
+// const receiver = document.querySelector('.receiver')
 const draggables = document.querySelectorAll('.draggable')
 
 draggables.forEach(draggable => {
@@ -98,38 +98,49 @@ function pointerDown(e) {
 function pointerUp(e) {
 	const draggable = e.target
 
-	// remove all css that's no longer needed
+	// remove css from draggable that's no longer needed
 	draggable.classList.remove('holding')
 	draggable.style.position = ''
 	draggable.style.top = ''
 	draggable.style.left = ''
 
-	// 'hide' the draggable from pointer so we can get at what's under it,
-	// get what's under, then 'unhide' the draggable
-	draggable.style.pointerEvents = 'none'
-	const dropZone = document.elementFromPoint(e.clientX, e.clientY)
-	// 'unhide' the draggable
-	draggable.style.pointerEvents = ''
-
-	// append the draggable where it's dropped if it's receiver`
-	if (dropZone.classList.contains('receiver'))
-		dropZone.appendChild(draggable)
+	// briefly 'hide' the draggable to get what it was just hovering over
+	// draggable.style.pointerEvents = 'none'
+	const nodesUnderDraggable = document.elementsFromPoint(e.clientX, e.clientY)
+	// draggable.style.pointerEvents = ''
+	const draggableIsOverReceiver = 
+		nodesUnderDraggable.some(node => node.classList.contains('receiver'))
 	
-	// accounts for dropping onto a child of a receiver
-	if (dropZone.parentNode.classList.contains('receiver'))
-		dropZone.parentNode.appendChild(draggable)
 	
-	// delete draggable if it's dropped in the origin
-	if (draggable.parentNode.classList.contains('origin'))
+	// delete the draggable if it's dropped outside a receiver && came from origin
+	if (
+		!draggableIsOverReceiver &&
+		draggable.parentNode === origin
+	) {
 		draggable.remove()
-	/* 👆🏽 NOTE: When this was left simply as `else draggable.remove()`, it had the side effect of deleting things that were dropped outside of a receiver. Maybe this could be useful? Not using currently to avoid accidental removal. */
+		return
+	}
 
-	// remove visual feedback for being hovered over
-	dropZone.classList.remove('hovered')
-	
-	// (last step) remove event listeners that were added on pointerdown
+	// address case where it comes from a receiver and is dropped outside one
+	if (
+		!draggableIsOverReceiver &&
+		draggable.parentNode.classList.contains('receiver')
+	) {
+		return
+	}
+
+	// we're definitely dropping in a receiver, so get that receiver
+	const receiver = nodesUnderDraggable.find(
+		node => node.classList.contains('receiver')
+	)
+
+	// append draggable to the receiver, remove listeners added on pointerdown
+	receiver.appendChild(draggable)
 	draggable.removeEventListener('pointermove', pointerMove)
 	draggable.removeEventListener('pointerup', pointerUp)
+
+	// remove visual feedback for being hovered over
+	receiver.classList.remove('hovered')
 }
 
 
@@ -142,6 +153,17 @@ function pointerMove(e) {
 	const hoveredOver = document.elementFromPoint(e.clientX, e.clientY)
 	draggable.style.pointerEvents = ''
 
+	// ensure hoveredOver visual feedback is gone after dragging out of a receiver
+	// (also prevents halting error when dragged outside of origin or receivers)
+	if (!hoveredOver || !hoveredOver.classList.contains('receiver')) {
+		const receivers = document.querySelectorAll('.receiver')
+		receivers.forEach(receiver => {
+			if (receiver !== hoveredOver) receiver.classList.remove('hovered')
+		})
+		updatePosition(e)
+		return
+	}
+
 	// get rid of feedback on every receiver, so we can 
 	// show it only on what we're currently over
 	const receivers = document.querySelectorAll('.receiver')
@@ -153,9 +175,12 @@ function pointerMove(e) {
 	// show visual feedback on the receiver we're dragging over
 	if (hoveredOver.classList.contains('receiver'))
 		hoveredOver.classList.add('hovered')
-	// account for dropping on child of receiver
-	if (hoveredOver.parentNode.classList.contains('receiver'))
-		hoveredOver.parentNode.classList.add('hovered')
+
+	if (hoveredOver.parentNode) {
+		// account for dropping on child of receiver
+		if (hoveredOver.parentNode.classList.contains('receiver'))
+			hoveredOver.parentNode.classList.add('hovered')
+	}
 	
 	// match the draggable's position to the pointer
 	updatePosition(e)
