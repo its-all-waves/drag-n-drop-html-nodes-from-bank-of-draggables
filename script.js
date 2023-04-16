@@ -104,32 +104,20 @@ function pointerUp(e) {
 	draggable.style.top = ''
 	draggable.style.left = ''
 
-	// briefly 'hide' the draggable to get what it was just hovering over
-	// draggable.style.pointerEvents = 'none'
 	const nodesUnderDraggable = document.elementsFromPoint(e.clientX, e.clientY)
-	// draggable.style.pointerEvents = ''
 	const draggableIsOverReceiver = 
 		nodesUnderDraggable.some(node => node.classList.contains('receiver'))
 	
+	// if draggable is dropped outside receiver, return
+	// unless it came from origin, then delete it, first
+	if (!draggableIsOverReceiver) {
+		if (draggable.parentNode === origin) {
+			draggable.remove()
+		}
+		return
+	}
 	
-	// delete the draggable if it's dropped outside a receiver && came from origin
-	if (
-		!draggableIsOverReceiver &&
-		draggable.parentNode === origin
-	) {
-		draggable.remove()
-		return
-	}
-
-	// address case where it comes from a receiver and is dropped outside one
-	if (
-		!draggableIsOverReceiver &&
-		draggable.parentNode.classList.contains('receiver')
-	) {
-		return
-	}
-
-	// we're definitely dropping in a receiver, so get that receiver
+	// we're definitely dropping in a receiver, so get the receiver
 	const receiver = nodesUnderDraggable.find(
 		node => node.classList.contains('receiver')
 	)
