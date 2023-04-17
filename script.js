@@ -21,7 +21,6 @@ draggables.forEach(draggable => {
 	
 	// Apply all the event listeners to the draggable thru this listener
 	draggable.addEventListener('pointerdown', pointerDown)
-	
 })
 
 // Disallow the page from being pulled down to refresh / doing that bouncy bs
@@ -94,7 +93,7 @@ function pointerDown(e) {
 }
 
 
-/* Determine where we are so we can drop the item there, if appropriate */
+/* Determine where we are so we can drop the item there, if appropriate. Should successfully act on a receiver no matter what's inside it or what contains it.*/
 function pointerUp(e) {
 	const draggable = e.target
 
@@ -107,19 +106,18 @@ function pointerUp(e) {
 	// get the nodes under the draggable
 	const nodesUnderDraggable = document.elementsFromPoint(e.clientX, e.clientY)
 
-	// define being over a receiver
-	const draggableIsOverReceiver = nodesUnderDraggable.some(node =>
+	// define dropping on a receiver
+	const droppedOnReceiver = nodesUnderDraggable.some(node =>
 		node.classList.contains('receiver')
 	)
 
 	// if draggable is dropped outside receiver, return,
 	// unless it came from origin, then delete it first
-	if (!draggableIsOverReceiver) {
-		if (draggable.parentNode === origin) {
-			draggable.remove()
-		}
+	if (!droppedOnReceiver) {
+		if (draggable.parentNode === origin) draggable.remove()
 		draggable.removeEventListener('pointermove', pointerMove)
 		draggable.removeEventListener('pointerup', pointerUp)
+		draggable.removeEventListener('pointercancel', pointerUp)
 		return
 	}
 
@@ -128,38 +126,33 @@ function pointerUp(e) {
 		node.classList.contains('receiver')
 	)
 
-	// // kill visual feedback for being hovered over
+	// kill visual feedback for being hovered over
 	receiver.classList.remove('hovered')
 
 	// append draggable to the receiver, remove listeners added on pointerdown
 	receiver.appendChild(draggable)
 	draggable.removeEventListener('pointermove', pointerMove)
 	draggable.removeEventListener('pointerup', pointerUp)
+	draggable.removeEventListener('pointercancel', pointerUp)
 }
 
-
+/* Should successfully act on a receiver no matter what's inside it or what contains it. */
 function pointerMove(e) {
 	const draggable = e.target
 
 	// get the nodes under the draggable
 	const nodesUnderDraggable = document.elementsFromPoint(e.clientX, e.clientY)
 
-	// define being over a receiver
-	const draggableIsOverReceiver = nodesUnderDraggable.some(node =>
-		node.classList.contains('receiver')
-	)
-
 	// get the receiver if we're over one, else null
 	const receiver = nodesUnderDraggable.find(node =>
 		node.classList.contains('receiver')
 	)
 
-	// get rid of feedback on every other receiver so 
+	// get rid of feedback on every other receiver so
 	// we can show it only on what we're currently over
 	const receivers = document.querySelectorAll('.receiver')
 	receivers.forEach(_receiver => {
-		if (_receiver !== receiver)
-			_receiver.classList.remove('hovered')
+		if (_receiver !== receiver) _receiver.classList.remove('hovered')
 	})
 
 	// hightlight the receiver if we're over one
