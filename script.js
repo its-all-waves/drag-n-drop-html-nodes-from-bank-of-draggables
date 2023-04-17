@@ -65,7 +65,7 @@ function pointerDown(e) {
 	// get computed dimensions of draggable to later calc offset of where grabbed 
 	const bounds = draggable.getBoundingClientRect()
 
-	// store the offset between the click and the top/left of the draggable
+	// store the offset bt the click and the top/left of the draggable
 	draggable.grabOffset = {
 		x: e.clientX - bounds.x,
 		y: e.clientY - bounds.y,
@@ -96,6 +96,9 @@ function pointerDown(e) {
 /* Determine where we are so we can drop the item there, if appropriate. Should successfully act on a receiver no matter what's inside it or what contains it.*/
 function pointerUp(e) {
 	const draggable = e.target
+
+	// undoes: store the offset bt the click and the top/left of the draggable
+	delete draggable.grabOffset
 
 	// remove css from draggable that's no longer needed
 	draggable.classList.remove('holding')
