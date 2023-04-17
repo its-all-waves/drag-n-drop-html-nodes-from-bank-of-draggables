@@ -108,28 +108,28 @@ function pointerUp(e) {
 	const nodesUnderDraggable = document.elementsFromPoint(e.clientX, e.clientY)
 
 	// define being over a receiver
-	const draggableIsOverReceiver = 
-		nodesUnderDraggable.some(node => node.classList.contains('receiver'))
-	
+	const draggableIsOverReceiver = nodesUnderDraggable.some(node =>
+		node.classList.contains('receiver')
+	)
+
 	// if draggable is dropped outside receiver, return,
 	// unless it came from origin, then delete it first
 	if (!draggableIsOverReceiver) {
 		if (draggable.parentNode === origin) {
 			draggable.remove()
 		}
-		// // kill visual feedback for all receivers
-		// const receivers = document.querySelectorAll('.receiver')
-		// receivers.forEach(receiver => receiver.classList.remove('hovered'))
+		draggable.removeEventListener('pointermove', pointerMove)
+		draggable.removeEventListener('pointerup', pointerUp)
 		return
 	}
-	
+
 	// we're definitely dropping in a receiver, so get the receiver
-	const receiver = nodesUnderDraggable.find(
-		node => node.classList.contains('receiver')
+	const receiver = nodesUnderDraggable.find(node =>
+		node.classList.contains('receiver')
 	)
-	
+
 	// // kill visual feedback for being hovered over
-	// receiver.classList.remove('hovered')
+	receiver.classList.remove('hovered')
 
 	// append draggable to the receiver, remove listeners added on pointerdown
 	receiver.appendChild(draggable)
@@ -139,44 +139,32 @@ function pointerUp(e) {
 
 
 function pointerMove(e) {
-	// highlight the hovered-over receivers
 	const draggable = e.target
-	// 'hide' the draggable from pointer so we can get at what's under it,
-	// get what's under, then 'unhide' the draggable from the pointer
-	draggable.style.pointerEvents = 'none'
-	const hoveredOver = document.elementFromPoint(e.clientX, e.clientY)
-	draggable.style.pointerEvents = ''
 
-	// ensure hoveredOver visual feedback is gone after dragging out of a receiver
-	// (also prevents halting error when dragged outside of origin or receivers)
-	if (!hoveredOver || !hoveredOver.classList.contains('receiver')) {
-		const receivers = document.querySelectorAll('.receiver')
-		receivers.forEach(receiver => {
-			if (receiver !== hoveredOver) receiver.classList.remove('hovered')
-		})
-		updatePosition(e)
-		return
-	}
+	// get the nodes under the draggable
+	const nodesUnderDraggable = document.elementsFromPoint(e.clientX, e.clientY)
 
-	
-	// // get rid of feedback on every receiver, so we can 
-	// // show it only on what we're currently over
-	// const receivers = document.querySelectorAll('.receiver')
-	// receivers.forEach(receiver => {
-	// 	if (receiver !== hoveredOver)
-	// 		receiver.classList.remove('hovered')
-	// })
+	// define being over a receiver
+	const draggableIsOverReceiver = nodesUnderDraggable.some(node =>
+		node.classList.contains('receiver')
+	)
 
-	// // show visual feedback on the receiver we're dragging over
-	// if (hoveredOver.classList.contains('receiver'))
-	// 	hoveredOver.classList.add('hovered')
+	// get the receiver if we're over one, else null
+	const receiver = nodesUnderDraggable.find(node =>
+		node.classList.contains('receiver')
+	)
 
-	// if (hoveredOver.parentNode) {
-	// 	// account for dropping on child of receiver
-	// 	if (hoveredOver.parentNode.classList.contains('receiver'))
-	// 		hoveredOver.parentNode.classList.add('hovered')
-	// }
-	
+	// get rid of feedback on every other receiver so 
+	// we can show it only on what we're currently over
+	const receivers = document.querySelectorAll('.receiver')
+	receivers.forEach(_receiver => {
+		if (_receiver !== receiver)
+			_receiver.classList.remove('hovered')
+	})
+
+	// hightlight the receiver if we're over one
+	receiver?.classList.add('hovered')
+
 	// match the draggable's position to the pointer
 	updatePosition(e)
 }
