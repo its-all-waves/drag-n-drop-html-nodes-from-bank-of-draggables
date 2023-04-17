@@ -104,16 +104,22 @@ function pointerUp(e) {
 	draggable.style.top = ''
 	draggable.style.left = ''
 
+	// get the nodes under the draggable
 	const nodesUnderDraggable = document.elementsFromPoint(e.clientX, e.clientY)
+
+	// define being over a receiver
 	const draggableIsOverReceiver = 
 		nodesUnderDraggable.some(node => node.classList.contains('receiver'))
 	
-	// if draggable is dropped outside receiver, return
-	// unless it came from origin, then delete it, first
+	// if draggable is dropped outside receiver, return,
+	// unless it came from origin, then delete it first
 	if (!draggableIsOverReceiver) {
 		if (draggable.parentNode === origin) {
 			draggable.remove()
 		}
+		// // kill visual feedback for all receivers
+		// const receivers = document.querySelectorAll('.receiver')
+		// receivers.forEach(receiver => receiver.classList.remove('hovered'))
 		return
 	}
 	
@@ -121,14 +127,14 @@ function pointerUp(e) {
 	const receiver = nodesUnderDraggable.find(
 		node => node.classList.contains('receiver')
 	)
+	
+	// // kill visual feedback for being hovered over
+	// receiver.classList.remove('hovered')
 
 	// append draggable to the receiver, remove listeners added on pointerdown
 	receiver.appendChild(draggable)
 	draggable.removeEventListener('pointermove', pointerMove)
 	draggable.removeEventListener('pointerup', pointerUp)
-
-	// remove visual feedback for being hovered over
-	receiver.classList.remove('hovered')
 }
 
 
@@ -152,23 +158,24 @@ function pointerMove(e) {
 		return
 	}
 
-	// get rid of feedback on every receiver, so we can 
-	// show it only on what we're currently over
-	const receivers = document.querySelectorAll('.receiver')
-	receivers.forEach(receiver => {
-		if (receiver !== hoveredOver)
-			receiver.classList.remove('hovered')
-	})
+	
+	// // get rid of feedback on every receiver, so we can 
+	// // show it only on what we're currently over
+	// const receivers = document.querySelectorAll('.receiver')
+	// receivers.forEach(receiver => {
+	// 	if (receiver !== hoveredOver)
+	// 		receiver.classList.remove('hovered')
+	// })
 
-	// show visual feedback on the receiver we're dragging over
-	if (hoveredOver.classList.contains('receiver'))
-		hoveredOver.classList.add('hovered')
+	// // show visual feedback on the receiver we're dragging over
+	// if (hoveredOver.classList.contains('receiver'))
+	// 	hoveredOver.classList.add('hovered')
 
-	if (hoveredOver.parentNode) {
-		// account for dropping on child of receiver
-		if (hoveredOver.parentNode.classList.contains('receiver'))
-			hoveredOver.parentNode.classList.add('hovered')
-	}
+	// if (hoveredOver.parentNode) {
+	// 	// account for dropping on child of receiver
+	// 	if (hoveredOver.parentNode.classList.contains('receiver'))
+	// 		hoveredOver.parentNode.classList.add('hovered')
+	// }
 	
 	// match the draggable's position to the pointer
 	updatePosition(e)
